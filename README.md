@@ -33,8 +33,6 @@ Before starting, make sure you have:
 - AWS CLI configured with credentials:
   ```bash
   aws configure
-  AKIA5QH5NBLLESRFLLAC
-  2Ko6TOmrJ+27iYZVa3U57bUcyDcVTGaze7SI6djv
   ```
 - Required AWS permissions:
   - Lambda functions (create, update, invoke)
