@@ -33,6 +33,8 @@ Before starting, make sure you have:
 - AWS CLI configured with credentials:
   ```bash
   aws configure
+  AKIA5QH5NBLLESRFLLAC
+  2Ko6TOmrJ+27iYZVa3U57bUcyDcVTGaze7SI6djv
   ```
 - Required AWS permissions:
   - Lambda functions (create, update, invoke)
@@ -60,14 +62,25 @@ docker buildx build --platform linux/amd64 --provenance=false -f docling/Dockerf
 # Test locally (optional but recommended)
 docker run --platform linux/amd64 -p 9000:8080 aws-serverless-docling:latest
 
+# with mounting
+docker run --platform linux/amd64 -p 9000:8080 --mount type=bind,source=./docling/lambda_function.py,target=/var/task/lambda_function.py --env-file ./local.env aws-serverless-docling:latest
+
 # In another terminal, test the function:
-curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" \
-  -d '{"body": "{\"presignedUrl\": \"s3://your-bucket-name/document.pdf\"}"}'
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"presignedUrl": "https://arxiv.org/pdf/1706.03762"}'
+
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"presignedUrl": "https://kesho-source.s3.ap-southeast-2.amazonaws.com/asx_reports/2924-02857465-2A1550794.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA5QH5NBLLGWCYPZKX%2F20250913%2Fap-southeast-2%2Fs3%2Faws4_request&X-Amz-Date=20250913T064033Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDmFwLXNvdXRoZWFzdC0yIkcwRQIgJ6zonJLRyfKV3Ij3ub9aw7f2b04BDTRE5i3cEHsyU8gCIQD3Jv8sfzoxC7w275J7k%2Frn3A9Zb0sYj1Q7fsDIPwlp1CrWAghAEAAaDDkyODI0NDM3MDEzNCIMPcIxtyHSZfX3L4kSKrMCXaTDB9cxrlXbyjU3%2BJTn7zjJ7IPENEJX6%2FpgnHXSWDLmso4TONKyqwI4nT3SPdUYzGSf8AkHtDja06I2Osc2lE%2FqG9pyRsPFbarhyi8ILFJIOwX7z8S07EuEI6IlB7P0kLC5aJGsH%2BPNILxEVi%2B1ukIEsyEe8Q6gmEyX%2B9bJH6aWq1NqpNDCKNmYuxFBBlwR6jzFpsaCbCNjlX9%2FwAWTPPp%2BEeMbWZuv4oAxIdDNtG6H0dPx0k89wLNbuqNUmZyI%2BKjZET0AWGew%2BXbFiIDVM9ay%2BCcZFkxS%2FsbW9OV1ZGm8HNDgOQC5RzW%2BHk%2Ft%2BI6ueNy%2Bt75pNaSpUVmfHo87J%2Fr8YHIl78%2BOl5%2FWzRXBPvR49WgULOP3Avay2cu4BHtNEZ5CfOUexEegHow4A%2FDXe3ql%2BjDq05PGBjqtAroVcJmY2Ka%2F6Au1PbUWoV1UDiCvfVyDIqdzedTww8J39Bb0fDauq9DPLW9uMSliGG4thw22cW%2BznxgOV82mIGmO98vDIi5Zkszp8f%2FfCeN9BpEfFqAv3Kk67V1WqvAQVE06hvMd7OYicllfHbcA3l1LLlwEizQ6e53ixQ4UqA9J2rT37Sawho7q6MQH9stKERGlUWFJQdU7USAVP0C%2B9dDg4XjQ1K7kshDlf0yPkdnnFaIeZwS8kQ9%2BfCYI1%2FsCLyhQf8dG58RCUc5eqH7kb%2BuoDHdJqu%2FFgO0L75etO5d2VRRCkQqe%2B8kDeRJpr%2Fw7ltuPdSgon2OZw38oxSgddOrsAy1mY%2FbWEHsJNzTP7LFxJihg3ln3YLLKha2RQ35dMDfBTXLS7yEllumixcw%3D&X-Amz-Signature=23319856d8b18e67d90c697412b0378707c15898a94b31dc2cd82854c22116ba&X-Amz-SignedHeaders=host&response-content-disposition=inline"}'
+
 ```
 
 ### Step 3: Deploy to AWS
 
 You have two deployment options:
+
+docker buildx build --platform linux/amd64 --provenance=false -f docling/Dockerfile -t aws-serverless-docling:latest .
+docker tag aws-serverless-docling:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest
+docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest
+aws lambda update-function-code     --function-name aws-serverless-docling     --image-uri=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:latest
+
 
 #### Option A: Automated CI/CD (Recommended)
 

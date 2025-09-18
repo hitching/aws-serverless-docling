@@ -1,2 +1,4 @@
 requests
 docling
+PyMuPDF
+boto3
